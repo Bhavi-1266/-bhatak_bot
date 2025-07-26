@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Call a Cab</title>
+</head>
+<body>
+    <h2>Call a Cab</h2>
+
+    <form id="cab-form" action="/cab/redirect" method="POST" onsubmit="return getLocationAndSubmit();">
+        <label>Select Cab Type:</label><br />
+        <select name="category" required>
+            <option value="auto">Auto</option>
+            <option value="mini">Mini</option>
+            <option value="prime">Prime</option>
+            <option value="share">Share</option>
+        </select><br /><br />
+
+        <input type="hidden" name="lat" id="lat">
+        <input type="hidden" name="lng" id="lng">
+
+        <button type="submit">Find Cab</button>
+    </form>
+    <script src="/cab/script.js"></script>
+</body>
+</html>
