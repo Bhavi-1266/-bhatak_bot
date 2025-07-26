@@ -338,6 +338,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
         // DOM elements
         const micBtn = document.getElementById('micBtn');
@@ -377,7 +378,12 @@
         function addMessage(content, isUser = false) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${isUser ? 'user' : 'ai'}`;
-            messageDiv.textContent = content;
+            if (isUser) {
+                messageDiv.textContent = content;
+            } else {
+                // Render markdown for bot responses
+                messageDiv.innerHTML = marked.parse(content);
+            }
             chatMessages.appendChild(messageDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
@@ -457,6 +463,31 @@
             };
         }
 
+        // OpenRouter API integration
+        let OPENROUTER_API_KEY = null;
+        const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
+        const MISTRAL_MODEL = "mistralai/mistral-small-3.2-24b-instruct:free";
+        sendBtn.disabled = true; // Disable until API key loads
+
+        // Fetch the API key from backend
+        async function initializeAPI() {
+            try {
+                const res = await fetch('/api/config');
+                const config = await res.json();
+                OPENROUTER_API_KEY = config.openrouterApiKey;
+                if (OPENROUTER_API_KEY) {
+                    sendBtn.disabled = false;
+                    console.log("API key loaded");
+                } else {
+                    throw new Error("API key not found");
+                }
+            } catch (err) {
+                alert("Failed to load API key. Chat will not work.");
+                console.error(err);
+            }
+        }
+        initializeAPI();
+
         // Handle form submission
         async function handleSubmit() {
             const message = chatInput.value.trim();
@@ -467,14 +498,42 @@
             addMessage(message, true);
             chatInput.value = '';
             try {
-                // Always respond with placeholder
-                const aiResponse = 'sorry i cant help u';
+                if (!OPENROUTER_API_KEY) throw new Error("API key not loaded");
+                const response = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+                        "Content-Type": "application/json",
+                        "HTTP-Referer": window.location.origin,
+                        "X-Title": "BhatakBot"
+                    },
+                    body: JSON.stringify({
+                        model: MISTRAL_MODEL,
+                        messages: [
+                            {
+                                role: "system",
+                                content: "You are भटकBot, a fun and helpful travel assistant. Answer concisely and help users in a casual way."
+                            },
+                            {
+                                role: "user",
+                                content: message
+                            }
+                        ],
+                        temperature: 0.8,
+                        max_tokens: 500
+                    })
+                });
+
+                if (!response.ok) throw new Error(await response.text());
+
+                const result = await response.json();
+                const aiResponse = result.choices?.[0]?.message?.content || "Hmm, no reply.";
                 addMessage(aiResponse, false);
-                // Speak the response
                 speakText(aiResponse);
+
             } catch (error) {
-                console.error('Error:', error);
-                addMessage('Sorry, something went wrong. Please try again.', false);
+                console.error("OpenRouter Error:", error);
+                addMessage("Sorry, something went wrong.", false);
             } finally {
                 isProcessing = false;
                 sendBtn.disabled = false;
