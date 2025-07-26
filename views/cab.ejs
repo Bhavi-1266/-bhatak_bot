@@ -1,25 +1,105 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Call a Cab</title>
+    <meta charset="UTF-8">
+    <title>Call a Cab | भटकBot</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00d4ff;
+            --secondary: #7c3aed;
+            --accent: #f59e0b;
+            --dark: #0f0f23;
+            --light: #1a1a2e;
+            --text-light: #e2e8f0;
+            --text-muted: #94a3b8;
+            --panel-bg: rgba(26, 26, 46, 0.92);
+            --box-bg: rgba(0, 212, 255, 0.08);
+            --box-hover: rgba(0, 212, 255, 0.18);
+            --shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #16213e 50%, #1a1a2e 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 8s ease infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .cab-container {
+            background: var(--panel-bg);
+            color: var(--text-light);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            max-width: 500px;
+            width: 100%;
+        }
+        h2 {
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        label, select, button {
+            width: 100%;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+        select, button {
+            padding: 0.7rem;
+            border-radius: 8px;
+            border: 1px solid var(--primary);
+            background: rgba(0,212,255,0.07);
+            color: var(--text-light);
+        }
+        button {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        button:hover {
+            transform: scale(1.03);
+        }
+    </style>
 </head>
 <body>
-    <h2>Call a Cab</h2>
-
-    <form id="cab-form" action="/cab/redirect" method="POST" onsubmit="return getLocationAndSubmit();">
-        <label>Select Cab Type:</label><br />
-        <select name="category" required>
-            <option value="auto">Auto</option>
-            <option value="mini">Mini</option>
-            <option value="prime">Prime</option>
-            <option value="share">Share</option>
-        </select><br /><br />
-
-        <input type="hidden" name="lat" id="lat">
-        <input type="hidden" name="lng" id="lng">
-
-        <button type="submit">Find Cab</button>
-    </form>
-    <script src="/cab/script.js"></script>
+    <div class="cab-container">
+        <h2>Call a Cab</h2>
+        <form id="cab-form" action="/cab/redirect" method="POST" onsubmit="return getLocationAndSubmit();">
+            <label>Select Cab Type:</label>
+            <select name="category" required>
+                <option value="auto">Auto</option>
+                <option value="mini">Mini</option>
+                <option value="prime">Prime</option>
+                <option value="share">Share</option>
+            </select>
+            <input type="hidden" name="lat" id="lat">
+            <input type="hidden" name="lng" id="lng">
+            <button type="submit">Find Cab</button>
+        </form>
+    </div>
+    <script>
+        function getLocationAndSubmit() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    document.getElementById("lat").value = position.coords.latitude;
+                    document.getElementById("lng").value = position.coords.longitude;
+                    document.getElementById("cab-form").submit();
+                });
+                return false; // prevent default form submission until location is set
+            } else {
+                alert("Geolocation is not supported by this browser.");
+                return false;
+            }
+        }
+    </script>
 </body>
 </html>

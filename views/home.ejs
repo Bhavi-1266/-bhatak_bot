@@ -101,10 +101,12 @@
             flex: 1 1 0;
             background: var(--panel-bg);
             display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding: 1rem;
+            overflow-y: auto;
         }
+
         .mic-container {
             display: flex;
             flex-direction: column;
@@ -113,6 +115,8 @@
             width: 100%;
             height: 100%;
         }
+
+
         .mic-btn {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             border: none;
@@ -152,7 +156,8 @@
         }
         .chatbox {
             width: 100%;
-            max-width: 520px;
+            max-width: none;
+            flex: 1;
             min-height: 350px;
             background: rgba(0,212,255,0.04);
             border-radius: 18px;
@@ -162,6 +167,8 @@
             padding: 2rem 1.5rem 1.2rem 1.5rem;
             position: relative;
             animation: fadeIn 0.5s;
+            height: 100%;
+            max-height: 100%;
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: scale(0.97); }
@@ -173,8 +180,9 @@
             margin-bottom: 1.2rem;
             color: var(--text-light);
             font-size: 1rem;
-            max-height: 300px;
+            max-height: 400px; /* was 300px */
         }
+
         .message {
             margin-bottom: 1rem;
             padding: 0.8rem 1rem;
@@ -311,7 +319,7 @@
             <div class="side-logo">भटकBot</div>
             <div class="side-boxes">
                 <div class="side-box" tabindex="0">Chappal mode</div>
-                <div class="side-box" tabindex="0">Call a cab</div>
+                <a href="/cab" class="side-box">Call a cab</a>
                 <div class="side-box" tabindex="0">Checklist chacha</div>
             </div>
         </div>
@@ -330,10 +338,12 @@
                 <form class="chat-input-row" id="chatForm" autocomplete="off">
                     <input class="chat-input" id="chatInput" type="text" placeholder="Type your message..." autocomplete="off" />
                     <button class="chat-send-btn" type="submit" id="sendBtn">Send</button>
+                    <button class="chat-send-btn" type="button" id="pauseBtn" style="background:#ff5555;" title="Pause Speech">⏸</button>
                     <button class="chat-mic-btn" type="button" id="chatMicBtn" title="Voice input">
                         <span class="chat-mic-icon">🎤</span>
                     </button>
                 </form>
+                
             </div>
         </div>
     </div>
@@ -390,18 +400,18 @@
 
         // Speak text
         function speakText(text) {
-            if (synth.speaking) {
-                synth.cancel();
-            }
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.rate = 0.9;
-            utterance.pitch = 1;
-            utterance.volume = 0.8;
-            utterance.onstart = () => {};
-            utterance.onend = () => {};
-            utterance.onerror = (event) => console.error('Speech error:', event.error);
-            synth.speak(utterance);
+            return new Promise((resolve) => {
+                if (synth.speaking) synth.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.9;
+                utterance.pitch = 1;
+                utterance.volume = 0.8;
+                utterance.onend = resolve;
+                utterance.onerror = resolve;
+                synth.speak(utterance);
+            });
         }
+
 
         // Handle voice input
         function startVoiceInput() {
@@ -552,6 +562,15 @@
                 handleSubmit();
             }
         });
+
+                // Pause button
+        const pauseBtn = document.getElementById('pauseBtn');
+        pauseBtn.addEventListener('click', () => {
+            if (synth.speaking) {
+                synth.cancel();
+            }
+        });
+
     </script>
 </body>
 </html> 
