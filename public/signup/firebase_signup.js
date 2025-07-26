@@ -34,7 +34,7 @@ window.addEventListener("DOMContentLoaded", () => {
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             console.log("Signup success:", userCredential.user.email);
-            window.location.href = "/login"; // redirect to login page after signup
+            window.location.href = '/login'; // redirect to login page after signup
         } catch (err) {
             console.error("Signup failed:", err.code, err.message);
             alert("Signup failed: " + err.message);

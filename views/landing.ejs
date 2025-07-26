@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Welcome to भटकBot</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap');
+
+:root {
+--primary: #00d4ff;
+--secondary: #7c3aed;
+--accent: #f59e0b;
+--dark: #0f0f23;
+--light: #1a1a2e;
+--text-light: #e2e8f0;
+--text-muted: #94a3b8;
+--gradient-1: linear-gradient(135deg, #0f0f23 0%, #16213e 100%);
+--gradient-2: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+--gradient-3: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);
+--shadow: 0 20px 40px rgba(0,0,0,0.3);
+--shadow-hover: 0 30px 60px rgba(0,0,0,0.5);
+}
+
+* {
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+}
+
+body {
+font-family: 'Poppins', sans-serif;
+background: linear-gradient(135deg, #0f0f23 0%, #16213e 50%, #1a1a2e 100%);
+background-size: 400% 400%;
+animation: gradientShift 8s ease infinite;
+min-height: 100vh;
+height: 100vh;
+display: flex;
+align-items: center;
+justify-content: center;
+overflow: hidden;
+padding: 1rem;
+}
+
+@keyframes gradientShift {
+0% { background-position: 0% 50%; }
+50% { background-position: 100% 50%; }
+100% { background-position: 0% 50%; }
+}
+
+
+
+.container {
+background: rgba(26, 26, 46, 0.9);
+backdrop-filter: blur(20px);
+padding: 2rem 3rem;
+border-radius: 25px;
+box-shadow: var(--shadow);
+text-align: center;
+max-width: 650px;
+width: 90%;
+max-height: 90vh;
+overflow-y: auto;
+position: relative;
+z-index: 10;
+transform: translateY(20px);
+animation: slideUp 0.8s ease-out forwards;
+border: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+@keyframes slideUp {
+to {
+transform: translateY(0);
+opacity: 1;
+}
+}
+
+.logo-section {
+margin-bottom: 2rem;
+position: relative;
+}
+
+h1 {
+color: var(--text-light);
+font-size: 3.5rem;
+font-weight: 800;
+margin-bottom: 0.5rem;
+background: linear-gradient(135deg, var(--primary), var(--secondary));
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+background-clip: text;
+text-shadow: none;
+}
+
+.tagline {
+color: var(--text-muted);
+font-size: 1.2rem;
+font-weight: 400;
+margin-bottom: 2rem;
+font-style: italic;
+}
+
+.about {
+background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(124, 58, 237, 0.1));
+border: 1px solid rgba(0, 212, 255, 0.2);
+border-radius: 18px;
+padding: 2rem 1.8rem;
+margin: 2rem 0;
+color: var(--text-light);
+font-size: 1rem;
+line-height: 1.6;
+position: relative;
+overflow: hidden;
+}
+
+.about::before {
+content: '';
+position: absolute;
+top: -50%;
+left: -50%;
+width: 200%;
+height: 200%;
+background: linear-gradient(45deg, transparent, rgba(0, 212, 255, 0.1), transparent);
+transform: rotate(45deg);
+animation: shine 3s ease-in-out infinite;
+}
+
+@keyframes shine {
+0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+50% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+100% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+}
+
+.about strong {
+color: var(--primary);
+font-weight: 700;
+font-size: 1.05em;
+}
+
+.features {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 1.2rem;
+margin: 2rem 0;
+}
+
+.feature {
+background: rgba(0, 212, 255, 0.1);
+border: 1px solid rgba(0, 212, 255, 0.2);
+border-radius: 15px;
+padding: 1.2rem;
+text-align: center;
+transition: transform 0.3s ease;
+}
+
+.feature:hover {
+transform: translateY(-3px) scale(1.03);
+background: rgba(0, 212, 255, 0.15);
+}
+
+.feature-icon {
+font-size: 2rem;
+margin-bottom: 0.5rem;
+display: block;
+}
+
+.feature-text {
+font-size: 1rem;
+color: var(--text-light);
+font-weight: 600;
+}
+
+.btn-group {
+display: flex;
+gap: 1.5rem;
+justify-content: center;
+margin-top: 2rem;
+}
+
+.btn {
+padding: 1rem 2.5rem;
+border: none;
+border-radius: 50px;
+font-size: 1.1rem;
+font-weight: 600;
+cursor: pointer;
+transition: all 0.3s ease;
+text-decoration: none;
+position: relative;
+overflow: hidden;
+min-width: 150px;
+}
+
+.btn-primary {
+background: linear-gradient(135deg, var(--primary), var(--secondary));
+color: var(--dark);
+box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+}
+
+.btn-secondary {
+background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(124, 58, 237, 0.2));
+color: var(--text-light);
+border: 1px solid rgba(0, 212, 255, 0.3);
+box-shadow: 0 10px 30px rgba(124, 58, 237, 0.2);
+}
+
+.btn::before {
+content: '';
+position: absolute;
+top: 0;
+left: -100%;
+width: 100%;
+height: 100%;
+background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+transition: left 0.5s ease;
+}
+
+.btn:hover::before {
+left: 100%;
+}
+
+.btn:hover {
+transform: translateY(-3px) scale(1.05);
+box-shadow: var(--shadow-hover);
+}
+
+.btn:active {
+transform: translateY(-1px) scale(1.02);
+}
+
+.pulse-dot {
+position: absolute;
+top: -5px;
+right: -5px;
+width: 12px;
+height: 12px;
+background: var(--accent);
+border-radius: 50%;
+animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+0% { transform: scale(1); opacity: 1; }
+50% { transform: scale(1.2); opacity: 0.7; }
+100% { transform: scale(1); opacity: 1; }
+}
+
+/* Extra Large screens (1200px and up) */
+@media (min-width: 1200px) {
+.container {
+max-width: 750px;
+padding: 2.5rem 4rem;
+}
+
+h1 {
+font-size: 4rem;
+}
+
+.tagline {
+font-size: 1.3rem;
+}
+
+.features {
+gap: 1.5rem;
+}
+
+.feature {
+padding: 1.5rem;
+}
+
+.about {
+padding: 2.5rem 2.2rem;
+font-size: 1.1rem;
+}
+}
+
+/* Large screens (992px to 1199px) */
+@media (min-width: 992px) and (max-width: 1199px) {
+.container {
+max-width: 650px;
+padding: 2rem 3rem;
+}
+
+h1 {
+font-size: 3.5rem;
+}
+
+.tagline {
+font-size: 1.2rem;
+}
+}
+
+/* Medium screens (768px to 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+.container {
+max-width: 550px;
+padding: 1.8rem 2.5rem;
+}
+
+h1 {
+font-size: 3rem;
+}
+
+.tagline {
+font-size: 1.1rem;
+}
+
+.features {
+gap: 1rem;
+}
+
+.feature {
+padding: 1rem;
+}
+
+.about {
+padding: 1.8rem 1.5rem;
+font-size: 0.95rem;
+}
+
+.btn {
+padding: 0.9rem 2.2rem;
+font-size: 1.05rem;
+min-width: 140px;
+}
+
+.btn-group {
+gap: 1.3rem;
+}
+}
+
+/* Small screens (576px to 767px) */
+@media (min-width: 576px) and (max-width: 767px) {
+body {
+padding: 1rem;
+}
+
+.container {
+max-width: 90%;
+padding: 1.5rem 2rem;
+}
+
+h1 {
+font-size: 2.5rem;
+}
+
+.tagline {
+font-size: 1rem;
+}
+
+.features {
+grid-template-columns: repeat(2, 1fr);
+gap: 1rem;
+}
+
+.feature {
+padding: 1rem;
+}
+
+.feature-icon {
+font-size: 1.8rem;
+}
+
+.feature-text {
+font-size: 0.9rem;
+}
+
+.about {
+padding: 1.5rem 1.3rem;
+font-size: 0.9rem;
+}
+
+.btn-group {
+flex-direction: column;
+gap: 1rem;
+}
+
+.btn {
+padding: 0.9rem 2rem;
+font-size: 1rem;
+}
+}
+
+/* Extra small screens (up to 575px) */
+@media (max-width: 575px) {
+body {
+padding: 0.5rem;
+}
+
+.container {
+padding: 1.2rem 1.5rem;
+margin: 0.5rem;
+max-height: 95vh;
+width: 95%;
+}
+  
+h1 {
+font-size: 2rem;
+}
+
+.tagline {
+font-size: 0.9rem;
+margin-bottom: 1.5rem;
+}
+  
+.btn-group {
+flex-direction: column;
+gap: 0.8rem;
+margin-top: 1.5rem;
+}
+
+.btn {
+padding: 0.8rem 1.8rem;
+font-size: 0.95rem;
+min-width: 120px;
+}
+  
+.features {
+grid-template-columns: repeat(2, 1fr);
+gap: 0.8rem;
+margin: 1.5rem 0;
+}
+
+.feature {
+padding: 0.8rem;
+}
+
+.feature-icon {
+font-size: 1.5rem;
+}
+
+.feature-text {
+font-size: 0.8rem;
+}
+
+.about {
+padding: 1.2rem 1rem;
+font-size: 0.85rem;
+margin: 1.5rem 0;
+}
+}
+
+.sparkle {
+position: absolute;
+color: var(--accent);
+font-size: 1rem;
+animation: sparkle 2s ease-in-out infinite;
+pointer-events: none;
+}
+
+@keyframes sparkle {
+0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
+50% { opacity: 1; transform: scale(1) rotate(180deg); }
+}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="logo-section">
+<h1>भटकBot</h1>
+<p class="tagline">Your street-smart travel buddy!</p>
+</div>
+
+<div class="features">
+<div class="feature">
+<span class="feature-icon">🎯</span>
+<div class="feature-text">Smart Navigation</div>
+</div>
+<div class="feature">
+<span class="feature-icon">🗣️</span>
+<div class="feature-text">Voice First</div>
+</div>
+<div class="feature">
+<span class="feature-icon">🎪</span>
+<div class="feature-text">No Tourist Traps</div>
+</div>
+</div>
+
+<div class="about">
+<strong>Lost? Confused? We got you! 🙋‍♂️</strong>
+<p>
+Ever found yourself in a new city wondering if you should turn left, right, or just sit down and have a good cry? 😅 We've ALL been there! That's exactly why we built भटकBot — your witty, street-smart companion who knows the real deal.
+</p>
+<p>
+Think of us as that friend who always knows the best shortcut, the coziest chai spot, and exactly where NOT to go. No flashy tourist traps, no boring ads — just the real info you need, served with a smile! 
+</p>
+</div>
+
+<div class="btn-group">
+<a href="/login" class="btn btn-primary">
+Login
+<div class="pulse-dot"></div>
+</a>
+<a href="/signup" class="btn btn-secondary">
+Sign Up
+</a>
+</div>
+</div>
+
+<script>
+// Add sparkle effects on hover
+document.querySelectorAll('.btn').forEach(btn => {
+btn.addEventListener('mouseenter', function(e) {
+for(let i = 0; i < 3; i++) {
+setTimeout(() => {
+const sparkle = document.createElement('div');
+sparkle.className = 'sparkle';
+sparkle.textContent = '✨';
+sparkle.style.left = Math.random() * 100 + '%';
+sparkle.style.top = Math.random() * 100 + '%';
+this.appendChild(sparkle);
+setTimeout(() => sparkle.remove(), 2000);
+}, i * 200);
+}
+});
+});
+
+// Add click ripple effect
+document.querySelectorAll('.btn').forEach(btn => {
+btn.addEventListener('click', function(e) {
+const ripple = document.createElement('div');
+ripple.style.position = 'absolute';
+ripple.style.borderRadius = '50%';
+ripple.style.background = 'rgba(255,255,255,0.6)';
+ripple.style.transform = 'scale(0)';
+ripple.style.animation = 'ripple 0.6s linear';
+ripple.style.left = (e.clientX - e.target.offsetLeft) + 'px';
+ripple.style.top = (e.clientY - e.target.offsetTop) + 'px';
+ripple.style.width = ripple.style.height = '20px';
+
+this.appendChild(ripple);
+setTimeout(() => ripple.remove(), 600);
+});
+});
+
+// Add CSS for ripple animation
+const style = document.createElement('style');
+style.textContent = `
+@keyframes ripple {
+to {
+transform: scale(4);
+opacity: 0;
+}
+}
+`;
+document.head.appendChild(style);
+</script>
+</body>
+</html>

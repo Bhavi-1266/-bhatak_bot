@@ -1,20 +1,263 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Sign Up</title>
+    <title>Sign Up | भटकBot</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00d4ff;
+            --secondary: #7c3aed;
+            --accent: #f59e0b;
+            --dark: #0f0f23;
+            --light: #1a1a2e;
+            --text-light: #e2e8f0;
+            --text-muted: #94a3b8;
+            --gradient-1: linear-gradient(135deg, #0f0f23 0%, #16213e 100%);
+            --gradient-2: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            --gradient-3: linear-gradient(135deg, #00d4ff 0%, #7c3aed 100%);
+            --shadow: 0 20px 40px rgba(0,0,0,0.3);
+            --shadow-hover: 0 30px 60px rgba(0,0,0,0.5);
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #16213e 50%, #1a1a2e 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 8s ease infinite;
+            min-height: 100vh;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding: 1rem;
+        }
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .container {
+            background: rgba(26, 26, 46, 0.92);
+            backdrop-filter: blur(20px);
+            padding: 2.5rem 2.5rem 2rem 2.5rem;
+            border-radius: 25px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            position: relative;
+            z-index: 10;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            animation: slideUp 0.8s ease-out forwards;
+            transform: translateY(20px);
+        }
+        @keyframes slideUp {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        .logo {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+        .signup-title {
+            color: var(--text-light);
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            letter-spacing: 1px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+        label {
+            color: var(--text-muted);
+            font-size: 1rem;
+            text-align: left;
+            margin-bottom: 0.3rem;
+            font-weight: 500;
+        }
+        input[type="email"],
+        input[type="password"] {
+            padding: 0.9rem 1.1rem;
+            border-radius: 10px;
+            border: 1.5px solid rgba(0, 212, 255, 0.18);
+            background: rgba(255,255,255,0.07);
+            color: var(--text-light);
+            font-size: 1rem;
+            outline: none;
+            transition: border 0.2s, box-shadow 0.2s;
+            font-family: inherit;
+        }
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            border: 1.5px solid var(--primary);
+            box-shadow: 0 0 0 2px rgba(0,212,255,0.12);
+        }
+        .btn {
+            padding: 1rem 2.5rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+            min-width: 150px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: var(--dark);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+        }
+        .btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: var(--shadow-hover);
+        }
+        .btn:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        .login-link {
+            display: block;
+            margin-top: 1.5rem;
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .login-link:hover {
+            color: var(--accent);
+            text-decoration: underline;
+        }
+        .pulse-dot {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 12px;
+            height: 12px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 1.2rem 0.7rem;
+                max-width: 98vw;
+            }
+            .logo {
+                font-size: 1.5rem;
+            }
+            .signup-title {
+                font-size: 1.1rem;
+            }
+            .btn {
+                padding: 0.8rem 1.5rem;
+                font-size: 1rem;
+                min-width: 120px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h2>Sign Up</h2>
-    <form id="signup-form">
-        <label>Email:</label><br />
-        <input type="email" id="signup-email" required /><br /><br />
-
-        <label>Password:</label><br />
-        <input type="password" id="signup-password" required /><br /><br />
-
-        <button type="submit">Sign Up</button>
-    </form>
-
+    <div class="container">
+        <div class="logo">भटकBot</div>
+        <div class="signup-title">Create your account</div>
+        <form id="signup-form">
+            <div>
+                <label for="signup-email">Email</label><br />
+                <input type="email" id="signup-email" required autocomplete="username" />
+            </div>
+            <div>
+                <label for="signup-password">Password</label><br />
+                <input type="password" id="signup-password" required autocomplete="new-password" />
+            </div>
+            <button type="submit" class="btn">
+                Sign Up
+                <div class="pulse-dot"></div>
+            </button>
+        </form>
+        <a href="/login" class="login-link">Already have an account? Login</a>
+    </div>
     <script type="module" src="/signup/firebase_signup.js"></script>
+    <script>
+    // Add sparkle effects on button hover (like landing/login page)
+    document.querySelectorAll('.btn').forEach(btn => {
+        btn.addEventListener('mouseenter', function(e) {
+            for(let i = 0; i < 3; i++) {
+                setTimeout(() => {
+                    const sparkle = document.createElement('div');
+                    sparkle.className = 'sparkle';
+                    sparkle.textContent = '✨';
+                    sparkle.style.position = 'absolute';
+                    sparkle.style.left = Math.random() * 100 + '%';
+                    sparkle.style.top = Math.random() * 100 + '%';
+                    this.appendChild(sparkle);
+                    setTimeout(() => sparkle.remove(), 2000);
+                }, i * 200);
+            }
+        });
+    });
+    // Add click ripple effect
+    document.querySelectorAll('.btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            const ripple = document.createElement('div');
+            ripple.style.position = 'absolute';
+            ripple.style.borderRadius = '50%';
+            ripple.style.background = 'rgba(255,255,255,0.6)';
+            ripple.style.transform = 'scale(0)';
+            ripple.style.animation = 'ripple 0.6s linear';
+            ripple.style.left = (e.clientX - e.target.offsetLeft) + 'px';
+            ripple.style.top = (e.clientY - e.target.offsetTop) + 'px';
+            ripple.style.width = ripple.style.height = '20px';
+            this.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
+        });
+    });
+    // Add CSS for ripple animation
+    const style = document.createElement('style');
+    style.textContent = `
+    @keyframes ripple {
+        to {
+            transform: scale(4);
+            opacity: 0;
+        }
+    }
+    .sparkle {
+        position: absolute;
+        color: var(--accent);
+        font-size: 1rem;
+        animation: sparkle 2s ease-in-out infinite;
+        pointer-events: none;
+    }
+    @keyframes sparkle {
+        0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
+        50% { opacity: 1; transform: scale(1) rotate(180deg); }
+    }
+    `;
+    document.head.appendChild(style);
+    </script>
 </body>
 </html>

@@ -31,15 +31,9 @@ document.addEventListener("DOMContentLoaded", () => {
             console.log(email, password);
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const token = await userCredential.user.getIdToken();
-            const res = await fetch("/landing", {
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-
-            const text = await res.text();
-            console.log("Login successful:", text);
+            console.log("This is your: ", token);
+            document.cookie = `token=${token}; path=/; max-age=86400`;
+            window.location.href = "/home";
         } catch (err) {
             console.log("HAHAHAHAH");
             // window.location.href = "/landing";
