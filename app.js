@@ -19,6 +19,7 @@ const signup_router = require('./routes/signup.js');
 const home_router = require('./routes/home.js');
 const cab_router = require('./routes/call_a_cab.js');
 const chappal_router = require('./routes/chappal.js');
+const checklist_router = require('./routes/checklist.js');
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -31,15 +32,16 @@ app.get('/',(req,res) => {
     res.render('landing');
 });
 
+app.get('/home', (req, res) => {
+    res.render('home');
+});
 app.use("/landing", landing_router);
 app.use("/login", login_router);
 app.use("/signup", signup_router);
 app.use("/home", home_router);
 app.use("/cab", cab_router);
 app.use("/chappal", chappal_router);
-app.get('/home', (req, res) => {
-    res.render('home');
-});
+app.use("/checklist", checklist_router);
 
 app.get('/api/config', (req, res) => {
     res.json({
