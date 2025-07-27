@@ -14,7 +14,7 @@ router.get('/', verify_firebase_token, async (req, res) => {
 router.post('/create', verify_firebase_token, async (req, res) => {
     const { title, purpose } = req.body;
     const uid = req.user.uid;
-    const aiItems = await generateChecklistItems(purpose);
+    const aiItems = await generateChecklistItems(purpose, req);
     const checklistRef = await pool.collection('checklists').add({
         title,
         purpose,
@@ -99,9 +99,11 @@ router.delete('/:id/delete', verify_firebase_token, async (req, res) => {
 
 
 
-async function generateChecklistItems(purpose) {
+async function generateChecklistItems(purpose, req) {
+    console.log("API key used:", process.env.OPENROUTER_API_KEY);
+
     const res = await axios.post('https://openrouter.ai/api/v1/chat/completions', {
-        model: 'mistralai/mistral-small-3.2-24b-instruct:free',
+        model: 'mistralai/mistral-7b-instruct',
         messages: [
             { role: "system", 
             content: `You are a helpful assistant that creates short checklists. Only output a plain list of 5 to 8 essential items with no formatting, no numbering, and no categories. Respond only with the checklist items based on the user's purpose.` },
@@ -110,7 +112,9 @@ async function generateChecklistItems(purpose) {
     }, {
         headers: {
             Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'HTTP-Referer': req.get('referer'),
+            'X-Title': 'BhatakBot'
         }
     });
     const content = res.data.choices?.[0]?.message?.content || "";

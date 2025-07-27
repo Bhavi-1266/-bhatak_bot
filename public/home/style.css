@@ -12,6 +12,7 @@
 --shadow: 0 20px 40px rgba(0,0,0,0.3);
 --shadow-hover: 0 30px 60px rgba(0,0,0,0.5);
  }
+
  * { 
     box-sizing: border-box; 
     margin: 0;
@@ -630,3 +631,15 @@
     box-shadow: 0 3px 15px rgba(0,212,255,0.06);
     }
     }
+    .checked {
+  text-decoration: line-through;
+  color: gray;
+  opacity: 0.6;
+}
+ul {
+    list-style-type: none;
+    padding-left: 0;
+    color: white;
+}
+
+

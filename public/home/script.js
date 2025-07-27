@@ -174,7 +174,7 @@ if (recognition) {
 
 let OPENROUTER_API_KEY = null;
 const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
-const MISTRAL_MODEL = "mistralai/mistral-small-3.2-24b-instruct:free";
+const MISTRAL_MODEL = "mistralai/mistral-7b-instruct";
 sendBtn.disabled = true;
 
 async function initializeAPI() {
