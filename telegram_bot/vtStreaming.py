@@ -2,245 +2,286 @@ import sounddevice as sd
 import numpy as np
 import whisper
 import requests
-import os
 import time
-import tempfile
 import subprocess
+import tempfile
+import os
 import threading
 
-# Audio Configuration
+# Ultra-fast Configuration
 SAMPLE_RATE = 16000
-MAX_RECORD_SECONDS = 15
-SILENCE_THRESHOLD = 0.01  # Adjust this value - lower = more sensitive to silence
-SILENCE_DURATION = 1.0    # Stop recording after 2 seconds of silence
-INTERRUPT_THRESHOLD = 0.02  # Volume threshold to interrupt AI speech
+MAX_RECORD_SECONDS = 5  # Shorter to avoid long waits
+SILENCE_THRESHOLD = 0.008  # More sensitive to actual speech
+SILENCE_DURATION = 1.2  # Longer pause before stopping
 
-# Global variables for speech interruption
-speech_process = None
-should_stop_speech = False
-interrupt_lock = threading.Lock()
+# Multiple fast APIs for redundancy
+APIS = [
+    {
+        "name": "Groq",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "key": "gsk_demo_key",  # Replace with your Groq key for best speed
+        "model": "llama3-8b-8192",
+        "timeout": 3
+    },
+    {
+        "name": "OpenRouter-Phi3",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "key": "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",
+        "model": "microsoft/phi-3-mini-128k-instruct:free",
+        "timeout": 
+    },
+    {
+        "name": "OpenRouter-Gemma",
+        "url": "https://openrouter.ai/api/v1/chat/completions", 
+        "key": "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",
+        "model": "google/gemma-2-9b-it:free",
+        "timeout": 5
+    }
+]
 
-# OpenRouter API Configuration
-OPENROUTER_API_KEY ="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"
-OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
-
-def speak_windows_sapi(text):
-    """Use Windows SAPI to generate speech with female voice"""
-    # Clean the text and properly escape for PowerShell
-    clean_text = str(text).strip().replace('\n', ' ')
-    # Remove problematic characters and escape quotes properly
-    clean_text = clean_text.replace('"', '').replace("'", "").replace('`', '')
-    print(f"[DEBUG] AI Speaking: {clean_text!r}")
-    
-    try:
-        # Use a different approach - save text to temp file to avoid quote issues
-        import tempfile
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False, encoding='utf-8') as f:
-            f.write(clean_text)
-            temp_file = f.name
+def speak_fast_powershell(text):
+    """Optimized PowerShell TTS - non-blocking"""
+    if not text or not text.strip():
+        return
         
-        powershell_cmd = f'''
-        Add-Type -AssemblyName System.Speech
-        $synth = New-Object System.Speech.Synthesis.SpeechSynthesizer
-        
-        # Try to find a female voice
-        $voices = $synth.GetInstalledVoices()
-        $femaleVoice = $null
-        
-        # Look for common female voice names
-        foreach ($voice in $voices) {{
-            $voiceName = $voice.VoiceInfo.Name
-            if ($voiceName -like "*Zira*" -or $voiceName -like "*Hazel*" -or $voiceName -like "*Susan*" -or 
-                $voiceName -like "*Female*" -or $voice.VoiceInfo.Gender -eq "Female") {{
-                $femaleVoice = $voice.VoiceInfo.Name
-                break
-            }}
-        }}
-        
-        # Set female voice if found
-        if ($femaleVoice) {{
-            $synth.SelectVoice($femaleVoice)
-        }}
-        
-        # Set voice properties
-        $synth.Rate = 0      # Normal speed
-        $synth.Volume = 100  # Full volume
-        
-        $synth.SetOutputToDefaultAudioDevice()
-        
-        # Read text from file to avoid quote issues
-        $textToSpeak = Get-Content -Path "{temp_file}" -Raw
-        $synth.Speak($textToSpeak)
-        '''
-        
-        result = subprocess.run(['powershell', '-Command', powershell_cmd], 
-                              capture_output=True, text=True, timeout=30)
-        
-        # Clean up temp file
+    def tts_worker():
         try:
-            os.unlink(temp_file)
-        except:
-            pass
-        
-        if result.returncode == 0:
-            print("[DEBUG] AI speech completed")
-        else:
-            print(f"[DEBUG] Speech error: {result.stderr}")
+            clean_text = str(text).strip().replace('\n', ' ').replace('"', '').replace("'", '')
             
-    except Exception as e:
-        print(f"❌ Speech Error: {e}")
-
-def select_device(partial_name, is_input=True):
-    devices = sd.query_devices()
-    for i, dev in enumerate(devices):
-        if partial_name in dev['name']:
-            if is_input and dev['max_input_channels'] > 0:
-                return i
-            elif not is_input and dev['max_output_channels'] > 0:
-                return i
-    raise ValueError(f"No suitable {partial_name} device found")
-
-def get_ai_response(user_message):
-    try:
-        headers = {
-            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-            "Content-Type": "application/json",
-            "HTTP-Referer": "http://localhost",
-            "X-Title": "BhatakBot"
-        }
-        
-        # Try a more reliable free model
-        data = {
-            "model": "qwen/qwen3-coder:free",  # More reliable free model
-            "messages": [
-                {
-                    "role": "system",
-                    "content": "You are a helpful AI assistant. Respond in English only."
-                },
-                {
-                    "role": "user",
-                    "content": user_message  # Removed the instruction suffix for cleaner response
-                }
-            ],
-            "max_tokens": 150,
-            "temperature": 0.7
-        }
-
-        print("[DEBUG] Sending request to OpenRouter...")  # Debug output
-        response = requests.post(OPENROUTER_API_URL, headers=headers, json=data, timeout=20)
-        
-        print(f"[DEBUG] Status Code: {response.status_code}")  # Debug output
-        print(f"[DEBUG] Response: {response.text}")  # Debug output
-
-        if response.status_code == 200:
-            result = response.json()
-            try:
-                ai_response = result['choices'][0]['message']['content']
-                return ai_response.strip()
-            except (KeyError, IndexError) as e:
-                print(f"[DEBUG] Parsing error: {e}")  # Debug output
-                return "Sorry, I couldn't process the response."
-        
-        # More specific error messages
-        elif response.status_code == 401:
-            return "Sorry, authentication failed. Please check the API key."
-        elif response.status_code == 404:
-            return "Sorry, the requested model was not found."
-        elif response.status_code == 429:
-            return "Sorry, too many requests. Please wait a moment."
-        else:
-            return f"Sorry, API returned error: {response.status_code}"
-
-    except requests.exceptions.Timeout:
-        return "Sorry, the request timed out."
-    except requests.exceptions.RequestException as e:
-        print(f"[DEBUG] Request error: {str(e)}")  # Debug output
-        return "Sorry, there was a connection error."
-    except Exception as e:
-        print(f"[DEBUG] Unexpected error: {str(e)}")  # Debug output
-        return "Sorry, an unexpected error occurred."
-def record_audio_with_silence_detection(device_id):
-    """Record audio until silence is detected or max time reached"""
-    print("🎙️ Listening... (speak now, will stop when you're quiet)")
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False, encoding='utf-8') as f:
+                f.write(clean_text)
+                temp_file = f.name
+            
+            # Optimized PowerShell command
+            powershell_cmd = f'''
+            Add-Type -AssemblyName System.Speech
+            $synth = New-Object System.Speech.Synthesis.SpeechSynthesizer
+            $synth.Rate = 3
+            $synth.Volume = 100
+            $synth.SetOutputToDefaultAudioDevice()
+            $text = Get-Content -Path "{temp_file}" -Raw
+            $synth.Speak($text)
+            $synth.Dispose()
+            '''
+            
+            # Run with proper flags for Windows
+            result = subprocess.run(
+                ['powershell', '-ExecutionPolicy', 'Bypass', '-Command', powershell_cmd], 
+                timeout=8, 
+                creationflags=subprocess.CREATE_NO_WINDOW,
+                capture_output=True,
+                text=True
+            )
+            
+            os.unlink(temp_file)
+            
+        except Exception as e:
+            print(f"TTS Error: {e}")
     
-    chunk_duration = 0.1  # Process audio in 100ms chunks
-    chunk_samples = int(SAMPLE_RATE * chunk_duration)
-    max_chunks = int(MAX_RECORD_SECONDS / chunk_duration)
-    silence_chunks_needed = int(SILENCE_DURATION / chunk_duration)
+    # Run TTS in background thread
+    threading.Thread(target=tts_worker, daemon=True).start()
+
+def get_fastest_ai_response(user_message):
+    """Try multiple APIs simultaneously for fastest response"""
+    if not user_message.strip():
+        return "I didn't catch that."
     
-    audio_data = []
-    silence_chunk_count = 0
+    def try_api(api_config, result_container):
+        """Try a single API"""
+        try:
+            headers = {
+                "Authorization": f"Bearer {api_config['key']}", 
+                "Content-Type": "application/json"
+            }
+            
+            # Optimized payload for speed
+            data = {
+                "model": api_config['model'],
+                "messages": [
+                    {"role": "system", "content": "Be brief and helpful. Max 2 sentences."},
+                    {"role": "user", "content": user_message}
+                ],
+                "max_tokens": 40,  # Very short for speed
+                "temperature": 0.1,  # Low for faster generation
+                "top_p": 0.9
+            }
+            
+            response = requests.post(
+                api_config['url'], 
+                headers=headers, 
+                json=data, 
+                timeout=api_config['timeout']
+            )
+            
+            if response.status_code == 200:
+                content = response.json()['choices'][0]['message']['content'].strip()
+                if content and len(content) > 5:  # Valid response
+                    result_container[0] = content
+                    result_container[1] = api_config['name']
+                    
+        except Exception as e:
+            print(f"API {api_config['name']} failed: {e}")
+    
+    # Try APIs in parallel
+    result_container = [None, None]  # [response, api_name]
+    threads = []
+    
+    for api in APIS:
+        thread = threading.Thread(target=try_api, args=(api, result_container))
+        thread.daemon = True
+        thread.start()
+        threads.append(thread)
+    
+    # Wait for first successful response (max 6 seconds total)
+    start_time = time.time()
+    while result_container[0] is None and time.time() - start_time < 6:
+        time.sleep(0.1)
+        
+        # Clean up finished threads
+        threads = [t for t in threads if t.is_alive()]
+        if not threads:  # All threads finished
+            break
+    
+    if result_container[0]:
+        print(f"[{result_container[1]}]", end=" ")
+        return result_container[0]
+    else:
+        return "I'm having trouble connecting right now."
+
+def record_quick(device_id):
+    """Optimized recording with better speech detection"""
+    chunks = []
+    silence_count = 0
+    speech_detected = False
+    chunk_size = int(0.1 * SAMPLE_RATE)
+    max_chunks = int(MAX_RECORD_SECONDS / 0.1)
+    silence_needed = int(SILENCE_DURATION / 0.1)
     
     for i in range(max_chunks):
-        # Record a small chunk
-        chunk = sd.rec(chunk_samples, samplerate=SAMPLE_RATE, channels=1, dtype='float32', device=device_id)
+        chunk = sd.rec(chunk_size, samplerate=SAMPLE_RATE, channels=1, dtype='float32', device=device_id)
         sd.wait()
+        chunks.append(chunk.flatten())
         
-        audio_data.append(chunk.flatten())
+        # Calculate volume
+        volume = np.sqrt(np.mean(chunk**2))
         
-        # Check if this chunk is silent
-        chunk_volume = np.sqrt(np.mean(chunk**2))  # RMS volume
-        
-        if chunk_volume < SILENCE_THRESHOLD:
-            silence_chunk_count += 1
-            print(".", end="", flush=True)  # Show silence detection
+        # Check for speech
+        if volume > SILENCE_THRESHOLD:
+            speech_detected = True
+            silence_count = 0
+            print("🔊", end="", flush=True)  # Show speech detected
         else:
-            silence_chunk_count = 0  # Reset silence counter if sound detected
-            print("🔊", end="", flush=True)  # Show sound detection
+            if speech_detected:  # Only count silence after we've detected speech
+                silence_count += 1
+                print(".", end="", flush=True)
+            else:
+                print("_", end="", flush=True)  # Waiting for speech
         
-        # Stop if we've had enough silence
-        if silence_chunk_count >= silence_chunks_needed:
-            print(f"\n⏹️ Stopped after {(i+1)*chunk_duration:.1f} seconds (silence detected)")
+        # Stop only after we've detected speech AND then silence
+        if speech_detected and silence_count >= silence_needed:
+            print(f" ({(i+1)*0.1:.1f}s)", end="")
             break
-    else:
-        print(f"\n⏹️ Stopped after maximum time ({MAX_RECORD_SECONDS} seconds)")
     
-    # Combine all chunks
-    full_audio = np.concatenate(audio_data)
-    return full_audio
+    # Only return audio if we detected actual speech
+    if speech_detected:
+        return np.concatenate(chunks)
+    else:
+        return np.array([])  # Return empty array if no speech
 
 def main():
     try:
-        # Set up input device (for recording from call)
+        # Audio setup
+        input_id = None
         try:
-            input_id = select_device("CABLE Output", is_input=True)
-            print(f"✅ Using VB-Cable: {sd.query_devices(input_id)['name']}")
-        except ValueError:
-            print("⚠️  VB-Cable not found, using default microphone")
-            input_id = None
+            devices = sd.query_devices()
+            for i, dev in enumerate(devices):
+                if "CABLE Output" in dev['name'] and dev['max_input_channels'] > 0:
+                    input_id = i
+                    print(f"✅ Using: {dev['name']}")
+                    break
+        except:
+            print("⚠️ Using default microphone")
         
-        model = whisper.load_model("medium")
-        print("🤖 AI Voice Assistant Ready!")
+        print("Loading Whisper...")
+        # Use tiny model for maximum speed
+        model = whisper.load_model("tiny", device="cpu")
+        
+        print("🚀 FAST AI Ready! Target: <3 seconds response")
+        print("=" * 50)
         
         while True:
-            # Record audio with silence detection
-            audio = record_audio_with_silence_detection(input_id)
+            print("🎙️ ", end="", flush=True)
             
-            # Normalize audio
+            # Start timing
+            total_start = time.time()
+            
+            # Record audio
+            audio = record_quick(input_id)
+            record_time = time.time() - total_start
+            
+            # Skip processing if no speech detected
+            if len(audio) == 0:
+                print(" (no speech)")
+                continue
+            
             if np.max(np.abs(audio)) > 0:
                 audio = audio / np.max(np.abs(audio))
+            else:
+                print(" (silent)")
+                continue
             
+            # Transcribe
+            transcribe_start = time.time()
             try:
-                result = model.transcribe(audio, fp16=False)
+                result = model.transcribe(
+                    audio, 
+                    fp16=False, 
+                    language='en',
+                    condition_on_previous_text=False,
+                    no_speech_threshold=0.6,
+                    logprob_threshold=-1.0,
+                    compression_ratio_threshold=2.4
+                )
+                
                 user_text = result['text'].strip()
-                print(f"👤 You: {user_text}")
+                transcribe_time = time.time() - transcribe_start
+                
+                if len(user_text) > 2:
+                    print(f"\n👤 You: {user_text}")
+                    print(f"⏱️ Record: {record_time:.1f}s | Transcribe: {transcribe_time:.1f}s", end=" | ")
+                    
+                    # Get AI response
+                    ai_start = time.time()
+                    ai_response = get_fastest_ai_response(user_text)
+                    ai_time = time.time() - ai_start
+                    
+                    total_time = time.time() - total_start
+                    
+                    print(f"AI: {ai_time:.1f}s | Total: {total_time:.1f}s")
+                    print(f"🤖 AI: {ai_response}")
+                    
+                    # Speak (non-blocking)
+                    speak_fast_powershell(ai_response)
+                    
+                    # Status indicator
+                    if total_time < 3:
+                        print("✅ FAST!")
+                    elif total_time < 5:
+                        print("⚡ Good")
+                    else:
+                        print("🐌 Slow")
+                    
+                    print("-" * 50)
+                else:
+                    print(".", end="", flush=True)
+                    
             except Exception as e:
-                print(f"❌ Transcription error: {e}")
-                user_text = ""
-            
-            if user_text:
-                ai_response = get_ai_response(user_text)
-                print(f"🤖 AI: {ai_response}")
-                speak_windows_sapi(ai_response)
-            
-            time.sleep(0.5)
+                print(f"\nTranscription error: {e}")
             
     except KeyboardInterrupt:
         print("\n🛑 Stopped.")
     except Exception as e:
-        print(f"🚨 Error: {e}")
-    finally:
-        sd.stop()
+        print(f"Error: {e}")
 
 if __name__ == "__main__":
     main()
