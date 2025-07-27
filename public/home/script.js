@@ -20,27 +20,34 @@ let userLang = "English";
 
 let preferredFemaleVoice = null;
 let languageVoiceMap = {};
-
 function loadVoices() {
-  const voices = synth.getVoices();
-  preferredFemaleVoice = voices.find(v => v.lang.startsWith('en') && /female|woman/i.test(v.name)) ||
-                          voices.find(v => v.name.includes('Google UK English Female')) ||
-                          voices.find(v => v.name.includes('English (India)')) ||
-                          voices[0];
-
-  languageVoiceMap = {
-    'English': voices.find(v => v.lang.startsWith('en')),
-    'Hindi': voices.find(v => v.lang === 'hi-IN') || voices.find(v => v.name.includes('Hindi')),
-    'Marathi': voices.find(v => v.lang === 'mr-IN') || voices.find(v => v.name.includes('Marathi')),
-    'Gujarati': voices.find(v => v.lang === 'gu-IN'),
-    'Bengali': voices.find(v => v.lang === 'bn-IN'),
-    'Punjabi': voices.find(v => v.lang === 'pa-IN'),
-    'Tamil': voices.find(v => v.lang === 'ta-IN'),
-    'Telugu': voices.find(v => v.lang === 'te-IN'),
-    'Kannada': voices.find(v => v.lang === 'kn-IN'),
-    'Urdu': voices.find(v => v.lang === 'ur-IN'),
-  };
+const voices = synth.getVoices();
+function findFemaleVoice(langCode, fallbackName = '') {
+  return (
+    voices.find(v => v.lang === langCode && /female|woman/i.test(v.name)) ||
+    voices.find(v => v.lang === langCode && v.name.includes(fallbackName)) ||
+    voices.find(v => v.lang === langCode)
+  );
 }
+preferredFemaleVoice = 
+  findFemaleVoice('en-US', 'Google UK English Female') ||
+  voices.find(v => v.name.includes('English (India)')) ||
+  voices.find(v => v.lang.startsWith('en')) ||
+  voices[0];
+languageVoiceMap = {
+  'English': findFemaleVoice('en-US', 'Google UK English Female'),
+  'Hindi': findFemaleVoice('hi-IN'),
+  'Marathi': findFemaleVoice('mr-IN'),
+  'Gujarati': findFemaleVoice('gu-IN'),
+  'Bengali': findFemaleVoice('bn-IN'),
+  'Punjabi': findFemaleVoice('pa-IN'),
+  'Tamil': findFemaleVoice('ta-IN'),
+  'Telugu': findFemaleVoice('te-IN'),
+  'Kannada': findFemaleVoice('kn-IN'),
+  'Urdu': findFemaleVoice('ur-IN'),
+};
+
+
 if (speechSynthesis.onvoiceschanged !== undefined) {
   speechSynthesis.onvoiceschanged = loadVoices;
 }
@@ -170,10 +177,11 @@ async function initializeAPI() {
   }
 }
 initializeAPI();
-
 async function handleSubmit() {
   const message = chatInput.value.trim();
   if (!message || isProcessing) return;
+
+
 
   isProcessing = true;
   sendBtn.disabled = true;
@@ -189,11 +197,10 @@ async function handleSubmit() {
       'tel': 'Telugu', 'urd': 'Urdu'
     };
     userLang = langMap[langCode] || 'English';
-  } catch (err) {
-    console.warn("Language detection failed:", err);
+
+  } catch {
     userLang = "English";
   }
-
   try {
     if (!OPENROUTER_API_KEY) throw new Error("API key not loaded");
 
@@ -210,7 +217,8 @@ async function handleSubmit() {
         messages: [
           {
             role: "system",
-            content: `You are भटकBot, a fun and helpful travel assistant. You can understand and respond in multiple Indian languages. Reply in the same language the user used in their message. Be concise and casual.`
+            content: `You are भटकBot, a fun and helpful travel assistant. The user is speaking in ${userLang}. Respond in that same language. Do not translate English queries into Hindi unless explicitly asked. Be concise and casual.`
+
           },
           {
             role: "user",
@@ -230,6 +238,18 @@ async function handleSubmit() {
     const result = await response.json();
     const aiResponse = result.choices?.[0]?.message?.content || "Hmm, no reply from the bot.";
     addMessage(aiResponse, false);
+    // Step 2: Detect bot reply language for correct voice
+    try {
+      const langCode = franc.min(aiResponse);
+      const langMap = {
+        'eng': 'English', 'hin': 'Hindi', 'mar': 'Marathi', 'guj': 'Gujarati',
+        'ben': 'Bengali', 'pan': 'Punjabi', 'kan': 'Kannada', 'tam': 'Tamil',
+        'tel': 'Telugu', 'urd': 'Urdu'
+      };
+      userLang = langMap[langCode] || 'English';
+    } catch {
+      userLang = 'English';
+    }
     speakText(aiResponse);
 
   } catch (error) {
@@ -256,3 +276,4 @@ const pauseBtn = document.getElementById('pauseBtn');
 pauseBtn.addEventListener('click', () => {
   if (synth.speaking) synth.cancel();
 });
+
