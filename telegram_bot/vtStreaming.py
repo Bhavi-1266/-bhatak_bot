@@ -12,7 +12,7 @@ import threading
 SAMPLE_RATE = 16000
 MAX_RECORD_SECONDS = 15
 SILENCE_THRESHOLD = 0.01  # Adjust this value - lower = more sensitive to silence
-SILENCE_DURATION = 2.0    # Stop recording after 2 seconds of silence
+SILENCE_DURATION = 1.0    # Stop recording after 2 seconds of silence
 INTERRUPT_THRESHOLD = 0.02  # Volume threshold to interrupt AI speech
 
 # Global variables for speech interruption
@@ -21,7 +21,7 @@ should_stop_speech = False
 interrupt_lock = threading.Lock()
 
 # OpenRouter API Configuration
-OPENROUTER_API_KEY ="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"
+OPENROUTER_API_KEY ="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"
 OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 def speak_windows_sapi(text):
@@ -111,7 +111,7 @@ def get_ai_response(user_message):
         
         # Try a more reliable free model
         data = {
-            "model": "mistralai/mistral-7b-instruct:free",  # More reliable free model
+            "model": "qwen/qwen3-coder:free",  # More reliable free model
             "messages": [
                 {
                     "role": "system",
