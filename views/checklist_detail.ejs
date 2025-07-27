@@ -1,41 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/checklist_detail/style.css">
-    <title>Document</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/home/style.css">
+  <title>Checklist | भटकBot</title>
 </head>
 <body>
-    <a href="/checklists">
-        <button>Back to All Checklists</button>
-    </a>
-    <h2><%= checklist.title %></h2>
-    <h3>Pending Items</h3>
-    <ul id="pending-items">
-      <% items.forEach(item => { if (!item.is_checked) { %>
-        <li>
-          <input type="checkbox" data-id="<%= item.id %>" class="check-toggle">
-          <span><%= item.text %></span>
-        </li>
-      <% } }); %>
-    </ul>
-    
-    <h3>Completed Items</h3>
-    <ul id="completed-items">
-      <% items.forEach(item => { if (item.is_checked) { %>
-        <li>
-          <input type="checkbox" data-id="<%= item.id %>" class="check-toggle" checked>
-          <span class="checked"><%= item.text %></span>
-        </li>
-      <% } }); %>
-    </ul>
+<div class="main-layout">
+  <div class="side-panel">
+    <div class="side-logo">भटकBot</div>
+    <div class="side-boxes">
+      <a href="/chappal" class="side-box">Chappal Mode</a>
+      <a href="/cab" class="side-box">Call a cab</a>
+      <a href="/checklists" class="side-box">Checklist Chacha</a>
+    </div>
+  </div>
+  <div class="main-panel">
+    <div class="chatbox">
+      <a href="/checklists">
+        <button class="chat-send-btn">⬅ Back to All Checklists</button>
+      </a>
+      <h2 style="color: var(--primary);"><%= checklist.title %></h2>
+      <h3 style="color: var(--accent);">Pending Items</h3>
+      <ul id="pending-items">
+        <% items.forEach(item => { if (!item.is_checked) { %>
+          <li style="margin-bottom: 0.5rem;">
+            <input type="checkbox" data-id="<%= item.id %>" class="check-toggle">
+            <span><%= item.text %></span>
+          </li>
+        <% } }); %>
+      </ul>
 
-    <hr>
-    <form action="/checklists/<%= checklist.id %>/items/add" method="POST">
-        <input name="text" placeholder="Add new item" required>
-        <button type="submit">Add</button>
-    </form>
+      <h3 style="color: var(--accent);">Completed Items</h3>
+      <ul id="completed-items">
+        <% items.forEach(item => { if (item.is_checked) { %>
+          <li style="margin-bottom: 0.5rem;">
+            <input type="checkbox" data-id="<%= item.id %>" class="check-toggle" checked>
+            <span class="checked"><%= item.text %></span>
+          </li>
+        <% } }); %>
+      </ul>
+
+      <hr>
+      <form action="/checklists/<%= checklist.id %>/items/add" method="POST">
+        <input name="text" placeholder="Add new item" required class="chat-input">
+        <button type="submit" class="chat-send-btn">Add</button>
+      </form>
+    </div>
+  </div>
+</div>
 <script src="/checklist_detail/script.js"></script>
 </body>
 </html>
