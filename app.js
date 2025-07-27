@@ -1,7 +1,6 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
-const PORT = 8000;
 const app = express();
 const admin = require('firebase-admin');
 const serviceAccount = require('./firebase_pvt_key.json');
@@ -80,4 +79,5 @@ app.use((req, res) => {
     res.status(404).render("error_404");
 });
 
+const PORT = process.env.PORT;
 app.listen(PORT, () => console.log(`Server active on ${PORT}`));
