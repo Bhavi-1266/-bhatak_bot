@@ -12,10 +12,8 @@ router.post("/redirect", (req, res) => {
     const { lat, lng, category } = req.body;
 
     if (!lat || !lng || !category) {
-        console.log('Issue');
         return res.status(400).send("Missing data");
     }
-
     const olaUrl = `https://book.olacabs.com/?lat=${lat}&lng=${lng}&category=${category}`;
     res.redirect(olaUrl);
 });
