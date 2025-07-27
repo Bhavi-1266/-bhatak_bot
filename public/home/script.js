@@ -1,3 +1,4 @@
+
 const micBtn = document.getElementById('micBtn');
 const micContainer = document.getElementById('micContainer');
 const chatBox = document.getElementById('chatBox');
@@ -8,6 +9,7 @@ const sendBtn = document.getElementById('sendBtn');
 const voiceIndicator = document.getElementById('voiceIndicator');
 const chatMicBtn = document.getElementById('chatMicBtn');
 const aajiBtn = document.getElementById('aajiBtn');
+
 const synth = window.speechSynthesis;
 let aajiMode = false;
 const defaultRate = 1.0;
@@ -15,6 +17,7 @@ const aajiRate = 0.5;
 let currentRate = defaultRate;
 let lastAIMessage = "";
 let userLang = "English";
+
 let preferredFemaleVoice = null;
 let languageVoiceMap = {};
 function loadVoices() {
@@ -44,10 +47,12 @@ languageVoiceMap = {
   'Urdu': findFemaleVoice('ur-IN'),
 };
 
+
 if (speechSynthesis.onvoiceschanged !== undefined) {
   speechSynthesis.onvoiceschanged = loadVoices;
 }
 loadVoices();
+
 aajiBtn.addEventListener('click', () => {
   aajiMode = !aajiMode;
   currentRate = aajiMode ? aajiRate : defaultRate;
@@ -58,9 +63,11 @@ aajiBtn.addEventListener('click', () => {
     setTimeout(() => speakText(lastAIMessage), 300);
   }
 });
+
 function stripEmojis(text) {
   return text.replace(/[\p{Emoji}\uFE0F]/gu, '').replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '');
 }
+
 function speakText(text) {
   lastAIMessage = text;
   return new Promise((resolve) => {
@@ -71,27 +78,33 @@ function speakText(text) {
     utterance.pitch = aajiMode ? 1.4 : 1;
     utterance.volume = 0.8;
     utterance.voice = languageVoiceMap[userLang] || preferredFemaleVoice;
+
     utterance.onend = resolve;
     utterance.onerror = resolve;
     console.log(`Speaking [${userLang}] with voice:`, utterance.voice?.name);
     synth.speak(utterance);
   });
 }
+
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 const recognition = SpeechRecognition ? new SpeechRecognition() : null;
+
 if (recognition) {
   recognition.continuous = false;
   recognition.interimResults = true;
   recognition.lang = 'en-US';
   recognition.maxAlternatives = 1;
 }
+
 let isListening = false;
 let isProcessing = false;
+
 function initChat() {
   micContainer.style.display = 'none';
   chatBox.style.display = 'flex';
   chatInput.focus();
 }
+
 function addMessage(content, isUser = false) {
   const messageDiv = document.createElement('div');
   messageDiv.className = `message ${isUser ? 'user' : 'ai'}`;
@@ -99,6 +112,7 @@ function addMessage(content, isUser = false) {
   chatMessages.appendChild(messageDiv);
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
+
 function startVoiceInput() {
   if (!recognition) return;
   isListening = true;
@@ -107,6 +121,7 @@ function startVoiceInput() {
   voiceIndicator.classList.add('active');
   recognition.start();
 }
+
 function stopVoiceInput() {
   isListening = false;
   micBtn.classList.remove('recording');
@@ -114,6 +129,7 @@ function stopVoiceInput() {
   voiceIndicator.classList.remove('active');
   recognition.stop();
 }
+
 micBtn.addEventListener('click', () => {
   if (!isListening) {
     initChat();
@@ -129,6 +145,7 @@ chatMicBtn.addEventListener('click', () => {
     stopVoiceInput();
   }
 });
+
 if (recognition) {
   recognition.onresult = (event) => {
     const transcript = Array.from(event.results).map(r => r[0].transcript).join('');
@@ -143,10 +160,12 @@ if (recognition) {
     stopVoiceInput();
   };
 }
+
 let OPENROUTER_API_KEY = null;
 const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 const MISTRAL_MODEL = "mistralai/mistral-small-3.2-24b-instruct:free";
 sendBtn.disabled = true;
+
 async function initializeAPI() {
   try {
     const res = await fetch('/api/config');
@@ -161,12 +180,15 @@ initializeAPI();
 async function handleSubmit() {
   const message = chatInput.value.trim();
   if (!message || isProcessing) return;
+
+
+
   isProcessing = true;
   sendBtn.disabled = true;
   chatMicBtn.disabled = true;
   addMessage(message, true);
   chatInput.value = '';
-  // Step 1: Detect user input language
+
   try {
     const langCode = franc.min(message);
     const langMap = {
@@ -175,11 +197,13 @@ async function handleSubmit() {
       'tel': 'Telugu', 'urd': 'Urdu'
     };
     userLang = langMap[langCode] || 'English';
+
   } catch {
     userLang = "English";
   }
   try {
     if (!OPENROUTER_API_KEY) throw new Error("API key not loaded");
+
     const response = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
       method: "POST",
       headers: {
@@ -194,6 +218,7 @@ async function handleSubmit() {
           {
             role: "system",
             content: `You are भटकBot, a fun and helpful travel assistant. The user is speaking in ${userLang}. Respond in that same language. Do not translate English queries into Hindi unless explicitly asked. Be concise and casual.`
+
           },
           {
             role: "user",
@@ -204,10 +229,12 @@ async function handleSubmit() {
         max_tokens: 500
       })
     });
+
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(`API failed: ${response.statusText}`);
     }
+
     const result = await response.json();
     const aiResponse = result.choices?.[0]?.message?.content || "Hmm, no reply from the bot.";
     addMessage(aiResponse, false);
@@ -224,6 +251,7 @@ async function handleSubmit() {
       userLang = 'English';
     }
     speakText(aiResponse);
+
   } catch (error) {
     addMessage("Sorry, something went wrong. Please try again.", false);
   } finally {
@@ -232,6 +260,7 @@ async function handleSubmit() {
     chatMicBtn.disabled = false;
   }
 }
+
 chatForm.addEventListener('submit', (e) => {
   e.preventDefault();
   handleSubmit();
@@ -242,7 +271,9 @@ chatInput.addEventListener('keydown', (e) => {
     handleSubmit();
   }
 });
+
 const pauseBtn = document.getElementById('pauseBtn');
 pauseBtn.addEventListener('click', () => {
   if (synth.speaking) synth.cancel();
 });
+
