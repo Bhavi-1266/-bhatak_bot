@@ -18,6 +18,13 @@ let currentRate = defaultRate;
 let lastAIMessage = "";
 let userLang = "English";
 
+const hamburgerBtn = document.getElementById('hamburgerBtn');
+const sideBoxes = document.querySelector('.side-boxes');
+
+hamburgerBtn.addEventListener('click', () => {
+  sideBoxes.classList.toggle('show');
+});
+
 let preferredFemaleVoice = null;
 let languageVoiceMap = {};
 function loadVoices() {
