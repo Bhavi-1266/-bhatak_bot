@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chappal Mode</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <style>
+        #map { height: 400px; width: 100%; margin-top: 10px; }
+        button { margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h2>Chappal Mode</h2>
+    <!-- <form id="chatForm">
+        <input id="chatInput" placeholder="Type a destination or use mic..." />
+        <button type="submit">Send</button>
+    </form>
+    <button id="micBtn">🎤 Speak Destination</button> -->
+    <form class="chat-input-row" id="chatForm" autocomplete="off">
+        <input class="chat-input" id="chatInput" type="text" placeholder="Type your message..." autocomplete="off" />
+        <button class="chat-send-btn" type="submit" id="sendBtn">Send</button>
+        <button class="chat-mic-btn" type="button" id="chatMicBtn" title="Voice input">
+            <span class="chat-mic-icon">🎤</span>
+        </button>
+    </form>
+    <div id="status"></div>
+    <div id="directions"></div>
+    <div id="map"></div>
+
+
+    <!-- 👇 External JS for cleaner code -->
+    <script src="/chappal/script.js"></script>
+</body>
+</html>

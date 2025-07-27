@@ -11,12 +11,14 @@ admin.initializeApp({
 
 const db = admin.firestore();
 const auth = admin.auth();
+app.use(express.json());
 
 const landing_router = require('./routes/landing.js');
 const login_router = require('./routes/login.js');
 const signup_router = require('./routes/signup.js');
 const home_router = require('./routes/home.js');
 const cab_router = require('./routes/call_a_cab.js');
+const chappal_router = require('./routes/chappal.js');
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -34,6 +36,7 @@ app.use("/login", login_router);
 app.use("/signup", signup_router);
 app.use("/home", home_router);
 app.use("/cab", cab_router);
+app.use("/chappal", chappal_router);
 app.get('/home', (req, res) => {
     res.render('home');
 });
