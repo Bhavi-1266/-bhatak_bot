@@ -17,26 +17,18 @@ router.post('/directions', verify_firebase_token, async (req, res) => {
     }
 
     try {
-        console.log('ORS API Key:', process.env.ORS_API_KEY);
-        console.log("Received:", req.body);
         const witRes = await axios.get('https://api.wit.ai/message', {
             params: { q: message },
             headers: {
                 Authorization: `Bearer ${process.env.WIT_AI_SERVER_TOKEN}`,
             },
         });
-
-        // Step 2: Extract destination from wit (no origin parsing anymore)
         const intent = witRes.data.intents?.[0]?.name;
         const destEntity = witRes.data.entities['wit$location:destination']?.[0]?.value;
         const fallbackDest = witRes.data.entities['wit$location:location']?.[0]?.value;
 
-        const origin = `${location.lat},${location.lon}`;  // always use current location
+        const origin = `${location.lat},${location.lon}`;
         const destination = destEntity || fallbackDest;
-
-        console.log("Intent:", intent);
-        console.log("Origin (from user location):", origin);
-        console.log("Destination (from wit):", destination);
 
         if (intent !== 'get_directions' || !destination) {
             return res.json({ steps: null, message: 'No clear destination detected.' });
@@ -63,11 +55,6 @@ router.post('/directions', verify_firebase_token, async (req, res) => {
         const destResult = await getLocationIQCoords(destination);
         const destCoord = destResult.coords;
         const destName = destResult.name;
-        console.log("Destination name:", destName);
-
-
-        console.log("Origin coordinates:", originCoord);
-        console.log("Destination coordinates:", destCoord);
 
         if (!originCoord || !destCoord) {
             return res.json({ steps: null, message: 'Could not geocode origin or destination.' });
@@ -85,16 +72,13 @@ router.post('/directions', verify_firebase_token, async (req, res) => {
                 }
             }
         );
-
         const route = orsRes.data;
         const steps = orsRes.data.features[0].properties.segments[0].steps;
-
-
         return res.json({
             steps,
             destination,
             destName,
-            route // send full ORS response so frontend can draw geometry
+            route
         });
 
     } catch (err) {

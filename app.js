@@ -42,8 +42,6 @@ app.get('/home', (req, res) => {
 });
 
 app.get('/api/config', (req, res) => {
-    console.log('API Key from env:', process.env.OPENROUTER_API_KEY ? 'Loaded' : 'Not found');
-    console.log('API Key length:', process.env.OPENROUTER_API_KEY ? process.env.OPENROUTER_API_KEY.length : 0);
     res.json({
         openrouterApiKey: process.env.OPENROUTER_API_KEY
     });
