@@ -9,14 +9,14 @@ const verify_firebase_token = async (req, res, next) => {
         token = req.cookies.token;
     }
     if (!token) {
-        return res.status(401).send('Missing token');
+        return res.status(401).redirect('/landing');
     }
     try {
         const decoded = await auth.verifyIdToken(token);
         req.user = decoded;
         next();
     } catch (err) {
-        res.status(403).send('Invalid or expired token');
+        res.status(403).redirect('/landing');
     }
 };
 
