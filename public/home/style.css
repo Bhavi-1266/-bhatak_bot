@@ -297,3 +297,14 @@ border-radius: 0;
 .container {
 border-radius: 0;
  }
+}
+.checked {
+  text-decoration: line-through;
+  color: gray;
+  opacity: 0.6;
+}
+ul {
+    list-style-type: none;
+    padding-left: 0;
+    color: white;
+}
