@@ -21,37 +21,41 @@ let userLang = "English";
 let preferredFemaleVoice = null;
 let languageVoiceMap = {};
 function loadVoices() {
-const voices = synth.getVoices();
-function findFemaleVoice(langCode, fallbackName = '') {
-  return (
-    voices.find(v => v.lang === langCode && /female|woman/i.test(v.name)) ||
-    voices.find(v => v.lang === langCode && v.name.includes(fallbackName)) ||
-    voices.find(v => v.lang === langCode)
-  );
+  const voices = synth.getVoices();
+  function findFemaleVoice(langCode, fallbackName = '') {
+    return (
+      voices.find(v => v.lang === langCode && /female|woman/i.test(v.name)) ||
+      voices.find(v => v.lang === langCode && v.name.includes(fallbackName)) ||
+      voices.find(v => v.lang === langCode)
+    );
+  }
+
+  preferredFemaleVoice = 
+    findFemaleVoice('en-US', 'Google UK English Female') ||
+    voices.find(v => v.name.includes('English (India)')) ||
+    voices.find(v => v.lang.startsWith('en')) ||
+    voices[0];
+
+  languageVoiceMap = {
+    'English': findFemaleVoice('en-US', 'Google UK English Female'),
+    'Hindi': findFemaleVoice('hi-IN'),
+    'Marathi': findFemaleVoice('mr-IN'),
+    'Gujarati': findFemaleVoice('gu-IN'),
+    'Bengali': findFemaleVoice('bn-IN'),
+    'Punjabi': findFemaleVoice('pa-IN'),
+    'Tamil': findFemaleVoice('ta-IN'),
+    'Telugu': findFemaleVoice('te-IN'),
+    'Kannada': findFemaleVoice('kn-IN'),
+    'Urdu': findFemaleVoice('ur-IN'),
+  };
 }
-preferredFemaleVoice = 
-  findFemaleVoice('en-US', 'Google UK English Female') ||
-  voices.find(v => v.name.includes('English (India)')) ||
-  voices.find(v => v.lang.startsWith('en')) ||
-  voices[0];
-languageVoiceMap = {
-  'English': findFemaleVoice('en-US', 'Google UK English Female'),
-  'Hindi': findFemaleVoice('hi-IN'),
-  'Marathi': findFemaleVoice('mr-IN'),
-  'Gujarati': findFemaleVoice('gu-IN'),
-  'Bengali': findFemaleVoice('bn-IN'),
-  'Punjabi': findFemaleVoice('pa-IN'),
-  'Tamil': findFemaleVoice('ta-IN'),
-  'Telugu': findFemaleVoice('te-IN'),
-  'Kannada': findFemaleVoice('kn-IN'),
-  'Urdu': findFemaleVoice('ur-IN'),
-};
 
-
+// ✅ Move these outside the function
 if (speechSynthesis.onvoiceschanged !== undefined) {
   speechSynthesis.onvoiceschanged = loadVoices;
 }
 loadVoices();
+
 
 aajiBtn.addEventListener('click', () => {
   aajiMode = !aajiMode;
@@ -276,4 +280,3 @@ const pauseBtn = document.getElementById('pauseBtn');
 pauseBtn.addEventListener('click', () => {
   if (synth.speaking) synth.cancel();
 });
-
