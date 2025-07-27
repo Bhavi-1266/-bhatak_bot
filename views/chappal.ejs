@@ -1,28 +1,184 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Chappal Mode</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <style>
-        #map { height: 400px; width: 100%; margin-top: 10px; }
-        button { margin-top: 10px; }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Chappal Mode | भटकBot</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <style>
+    :root {
+      --primary: #00d4ff;
+      --secondary: #7c3aed;
+      --accent: #f59e0b;
+      --dark: #0f0f23;
+      --text-light: #e2e8f0;
+      --panel-bg: rgba(26, 26, 46, 0.92);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #0f0f23, #16213e, #1a1a2e);
+      background-size: 400% 400%;
+      animation: gradientShift 8s ease infinite;
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .main-layout {
+      display: flex;
+      width: 100%;
+      height: 100%;
+    }
+
+    .chat-panel {
+      width: 30%;
+      background: var(--panel-bg);
+      display: flex;
+      flex-direction: column;
+      padding: 1rem;
+      border-right: 1px solid rgba(0,212,255,0.1);
+      overflow-y: auto;
+    }
+
+    .chat-panel h2 {
+      color: var(--primary);
+      margin-top: 0;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      margin-bottom: 1rem;
+      color: var(--text-light);
+    }
+
+    .message {
+      padding: 0.8rem 1rem;
+      margin-bottom: 0.7rem;
+      border-radius: 12px;
+      max-width: 90%;
+    }
+
+    .message.user {
+      background: rgba(0,212,255,0.1);
+      border: 1px solid rgba(0,212,255,0.2);
+      margin-left: auto;
+      text-align: right;
+    }
+
+    .message.ai {
+      background: rgba(124,58,237,0.1);
+      border: 1px solid rgba(124,58,237,0.2);
+      margin-right: auto;
+    }
+
+    .chat-input-row {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .chat-input {
+      flex: 1;
+      padding: 0.7rem 1rem;
+      border-radius: 8px;
+      border: 1.5px solid var(--primary);
+      background: rgba(0,212,255,0.07);
+      color: var(--text-light);
+      outline: none;
+    }
+
+    .chat-send-btn, .chat-mic-btn {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border: none;
+      border-radius: 8px;
+      color: var(--dark);
+      font-weight: 700;
+      padding: 0.7rem 1.2rem;
+      cursor: pointer;
+      transition: transform 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .chat-send-btn:hover, .chat-mic-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .chat-mic-icon {
+      font-size: 1.2rem;
+    }
+
+    .map-panel {
+      flex: 1;
+      position: relative;
+    }
+
+    #map {
+      height: 100%;
+      width: 100%;
+    }
+
+    #status {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      right: 10px;
+      background-color: rgba(15, 15, 35, 0.85);
+      color: var(--text-light);
+      padding: 10px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      z-index: 999;
+    }
+
+    #directions {
+      margin-top: 1rem;
+      background-color: rgba(0, 0, 0, 0.2);
+      padding: 0.8rem;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      color: var(--text-light);
+      max-height: 200px;
+      overflow-y: auto;
+    }
+  </style>
 </head>
 <body>
-    <h2>Chappal Mode</h2>
-    <form class="chat-input-row" id="chatForm" autocomplete="off">
+  <div class="main-layout">
+    <div class="chat-panel">
+      <h2>Chappal Mode</h2>
+      <form class="chat-input-row" id="chatForm" autocomplete="off">
         <input class="chat-input" id="chatInput" type="text" placeholder="Type your message..." autocomplete="off" />
         <button class="chat-send-btn" type="submit" id="sendBtn">Send</button>
         <button class="chat-mic-btn" type="button" id="chatMicBtn" title="Voice input">
-            <span class="chat-mic-icon">🎤</span>
+          <span class="chat-mic-icon">🎤</span>
         </button>
-    </form>
-    <div id="status"></div>
-    <div id="directions"></div>
-    <div id="map"></div>
-
-    <script src="/chappal/script.js"></script>
+      </form>
+      <div class="chat-messages" id="chatMessages"></div>
+      <div id="directions">Directions will appear here...</div>
+    </div>
+    <div class="map-panel">
+      <div id="map"></div>
+      <div id="status">Status: Waiting for input...</div>
+    </div>
+  </div>
+  <script src="/chappal/script.js"></script>
 </body>
 </html>
+
