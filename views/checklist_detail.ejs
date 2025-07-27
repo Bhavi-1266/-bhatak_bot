@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/checklist_detail/style.css">
+    <title>Document</title>
+</head>
+<body>
+    <a href="/checklists">
+        <button>Back to All Checklists</button>
+    </a>
+    <h2><%= checklist.title %></h2>
+    <h3>Pending Items</h3>
+    <ul id="pending-items">
+      <% items.forEach(item => { if (!item.is_checked) { %>
+        <li>
+          <input type="checkbox" data-id="<%= item.id %>" class="check-toggle">
+          <span><%= item.text %></span>
+        </li>
+      <% } }); %>
+    </ul>
+    
+    <h3>Completed Items</h3>
+    <ul id="completed-items">
+      <% items.forEach(item => { if (item.is_checked) { %>
+        <li>
+          <input type="checkbox" data-id="<%= item.id %>" class="check-toggle" checked>
+          <span class="checked"><%= item.text %></span>
+        </li>
+      <% } }); %>
+    </ul>
+
+    <hr>
+    <form action="/checklists/<%= checklist.id %>/items/add" method="POST">
+        <input name="text" placeholder="Add new item" required>
+        <button type="submit">Add</button>
+    </form>
+<script src="/checklist_detail/script.js"></script>
+</body>
+</html>

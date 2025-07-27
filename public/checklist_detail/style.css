@@ -1,0 +1,8 @@
+.checked {
+  text-decoration: line-through;
+  color: gray;
+  opacity: 0.6;
+}
+ul {
+    list-style-type: none;
+}

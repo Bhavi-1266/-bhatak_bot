@@ -8,6 +8,7 @@ const serviceAccount = require('./firebase_pvt_key.json');
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
 });
+const method_override = require('method-override');
 
 const db = admin.firestore();
 const auth = admin.auth();
@@ -27,6 +28,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
+app.use(method_override('_method'));
 
 app.get('/',(req,res) => {
     res.render('landing');
@@ -41,7 +43,7 @@ app.use("/signup", signup_router);
 app.use("/home", home_router);
 app.use("/cab", cab_router);
 app.use("/chappal", chappal_router);
-app.use("/checklist", checklist_router);
+app.use("/checklists", checklist_router);
 
 app.get('/api/config', (req, res) => {
     res.json({

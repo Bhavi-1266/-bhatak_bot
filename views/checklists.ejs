@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/checklists/style.css">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Your Checklists</h1>
+    <ul>
+        <% checklists.forEach(cl => { %>
+            <li>
+                <a href="/checklists/<%= cl.id %>"><%= cl.title %></a>
+            </li>
+            <form action="/checklists/<%=cl.id%>/delete?_method=DELETE" method="POST" onsubmit="return confirm('Confirm <%=cl.title%> deletion?');">
+                <button type="submit">Delete</button>
+            </form>
+        <% }) %>
+    </ul>
+    <hr>
+    <form action="/checklists/create" method="POST">
+        <h3>Create New Checklist</h3>
+        <input name="title" placeholder="Title" required><br>
+        <textarea name="purpose" placeholder="Purpose for checklist" required></textarea><br>
+        <button type="submit">Generate Checklist</button>
+    </form>
+<script src="/checklists/script.js"></script>
+</body>
+</html>
