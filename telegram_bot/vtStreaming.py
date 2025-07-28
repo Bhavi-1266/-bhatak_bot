@@ -19,14 +19,14 @@ APIS = [
     {
         "name": "Groq",
         "url": "https://api.groq.com/openai/v1/chat/completions",
-        "key": "gsk_demo_key",  # Replace with your Groq key for best speed
+        "key": "my-api key",  # Replace with your Groq key for best speed
         "model": "llama3-8b-8192",
-        "timeout": 3
+        "timeout":3,
     },
     {
         "name": "OpenRouter-Phi3",
         "url": "https://openrouter.ai/api/v1/chat/completions",
-        "key": "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",
+        "key": "mmyapi",
         "model": "microsoft/phi-3-mini-128k-instruct:free",
         "timeout": 
     },
